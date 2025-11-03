@@ -1,0 +1,39 @@
+erDiagram
+  Student {
+    INTEGER student_id PK
+    VARCHAR name
+    VARCHAR email
+    VARCHAR major
+    INTEGER year
+  }
+  Course {
+    VARCHAR course_id PK
+    VARCHAR title
+    INTEGER credits
+    VARCHAR department_id
+    INTEGER instructor_id
+  }
+  Instructor {
+    INTEGER instructor_id PK
+    VARCHAR name
+    VARCHAR email
+    VARCHAR department_id
+  }
+  Department {
+    VARCHAR department_id PK
+    VARCHAR name
+    VARCHAR location
+  }
+  Enrollment {
+    INTEGER enrollment_id PK
+    INTEGER student_id
+    VARCHAR course_id
+    VARCHAR grade
+    VARCHAR semester
+  }
+
+  Student ||--o{ Enrollment : "enrolls_in"
+  Course ||--o{ Enrollment : "has_enrollment"
+  Course }o--|| Instructor : "taught_by"
+  Course }o--|| Department : "offered_by"
+  Instructor }o--|| Department : "works_in"
