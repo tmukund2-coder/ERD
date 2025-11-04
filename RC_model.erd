@@ -1,0 +1,73 @@
+erdiagram RCModel
+notation=crowsfoot
+
+entity Manufacturer {
+    manufacturer_id: INTEGER key
+    manufacturer_name: VARCHAR(150)
+    manufacturer_website: VARCHAR(255)
+}
+
+entity Product {
+    product_id: VARCHAR(20) key
+    product_name: VARCHAR(200)
+    model_type: VARCHAR(100)
+    model_price: DECIMAL(10,2)
+    decal: VARCHAR(100)
+    category: VARCHAR(100)
+    scale: VARCHAR(50)
+    manufacturer_id: INTEGER
+}
+
+entity Inventory {
+    product_id: VARCHAR(20) key
+    qoh: INTEGER
+    reorder_level: INTEGER
+}
+
+entity Customer {
+    customer_id: INTEGER key
+    customer_name: VARCHAR(200)
+    cust_address: VARCHAR(300)
+    cust_email: VARCHAR(150)
+    cust_phone: VARCHAR(30)
+}
+
+entity Invoice {
+    invoice_number: VARCHAR(30) key
+    invoice_date: DATE
+    customer_id: INTEGER
+    order_id: VARCHAR(50)
+    total_amount: DECIMAL(12,2)
+    shipping_charge: DECIMAL(10,2)
+    invoice_status: VARCHAR(50)
+}
+
+entity Line {
+    line_number: INTEGER key
+    invoice_number: VARCHAR(30)
+    product_id: VARCHAR(20)
+    line_units: INTEGER
+    unit_price: DECIMAL(10,2)
+    line_status: VARCHAR(50)
+    ship_date: DATE
+}
+
+relationship ManufacturerProduct {
+    Manufacturer[1 | "manufacturer"] -> Product[0..N | "product"]
+}
+
+relationship ProductInventory {
+    Product[1 | "product"] -> Inventory[0..1 | "inventory"]
+}
+
+relationship CustomerInvoice {
+    Customer[1 | "customer"] -> Invoice[0..N | "invoice"]
+}
+
+relationship InvoiceLine {
+    Invoice[1 | "invoice"] -> Line[0..N | "line"]
+}
+
+relationship ProductLine {
+    Product[1 | "product"] -> Line[0..N | "line"]
+}
