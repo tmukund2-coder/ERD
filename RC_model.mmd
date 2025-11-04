@@ -1,0 +1,58 @@
+erDiagram
+  Manufacturer {
+    INTEGER manufacturer_id PK
+    VARCHAR manufacturer_name
+    VARCHAR manufacturer_website
+  }
+
+  Product {
+    VARCHAR product_id PK
+    VARCHAR product_name
+    VARCHAR model_type
+    DECIMAL model_price
+    VARCHAR decal
+    VARCHAR category
+    VARCHAR scale
+    INTEGER manufacturer_id
+  }
+
+  Inventory {
+    VARCHAR product_id PK
+    INTEGER qoh
+    INTEGER reorder_level
+  }
+
+  Customer {
+    INTEGER customer_id PK
+    VARCHAR customer_name
+    VARCHAR cust_address
+    VARCHAR cust_email
+    VARCHAR cust_phone
+  }
+
+  Invoice {
+    VARCHAR invoice_number PK
+    DATE invoice_date
+    INTEGER customer_id
+    VARCHAR order_id
+    DECIMAL total_amount
+    DECIMAL shipping_charge
+    VARCHAR invoice_status
+  }
+
+  Line {
+    INTEGER line_number PK
+    VARCHAR invoice_number
+    VARCHAR product_id
+    INTEGER line_units
+    DECIMAL unit_price
+    VARCHAR line_status
+    DATE ship_date
+  }
+
+  %% Relationships
+  Manufacturer ||--o{ Product : produces
+  Product ||--o| Inventory : has
+  Customer ||--o{ Invoice : "has_invoice"
+  Invoice ||--o{ Line : contains
+  Product ||--o{ Line : "appears_in"

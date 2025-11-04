@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>RC ERD Viewer — RC_model</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; margin: 1rem; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .mermaid { background: #fff; padding: 1rem; border-radius: 6px; box-shadow: 0 1px 6px rgba(0,0,0,0.08); }
+    footer { margin-top: 1rem; color: #666; font-size: 0.9rem }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>RC ERD Viewer — RC_model</h1>
+      <p>Rendered from <code>RC_model.mmd</code> (converted from <code>RC_model.erd</code>).</p>
+    </header>
+
+    <div class="mermaid">
+erDiagram
+  Manufacturer {
+    INTEGER manufacturer_id PK
+    VARCHAR manufacturer_name
+    VARCHAR manufacturer_website
+  }
+
+  Product {
+    VARCHAR product_id PK
+    VARCHAR product_name
+    VARCHAR model_type
+    DECIMAL model_price
+    VARCHAR decal
+    VARCHAR category
+    VARCHAR scale
+    INTEGER manufacturer_id
+  }
+
+  Inventory {
+    VARCHAR product_id PK
+    INTEGER qoh
+    INTEGER reorder_level
+  }
+
+  Customer {
+    INTEGER customer_id PK
+    VARCHAR customer_name
+    VARCHAR cust_address
+    VARCHAR cust_email
+    VARCHAR cust_phone
+  }
+
+  Invoice {
+    VARCHAR invoice_number PK
+    DATE invoice_date
+    INTEGER customer_id
+    VARCHAR order_id
+    DECIMAL total_amount
+    DECIMAL shipping_charge
+    VARCHAR invoice_status
+  }
+
+  Line {
+    INTEGER line_number PK
+    VARCHAR invoice_number
+    VARCHAR product_id
+    INTEGER line_units
+    DECIMAL unit_price
+    VARCHAR line_status
+    DATE ship_date
+  }
+
+  %% Relationships
+  Manufacturer ||--o{ Product : produces
+  Product ||--o| Inventory : has
+  Customer ||--o{ Invoice : "has_invoice"
+  Invoice ||--o{ Line : contains
+  Product ||--o{ Line : "appears_in"
+    </div>
+
+    <footer>
+      <p>Uses Mermaid CDN to render. For an offline image, use <code>@mermaid-js/mermaid-cli</code> and render <code>RC_model.mmd</code>.</p>
+    </footer>
+  </div>
+
+  <script src="https://unpkg.com/mermaid@10.4.0/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({ startOnLoad: true, theme: 'base' });</script>
+</body>
+</html>
