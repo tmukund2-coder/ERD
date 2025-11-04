@@ -42,7 +42,7 @@ erDiagram
 
   Line {
     INTEGER line_number PK
-    VARCHAR invoice_number
+    VARCHAR invoice_number PK
     VARCHAR product_id
     INTEGER line_units
     DECIMAL unit_price
@@ -56,3 +56,5 @@ erDiagram
   Customer ||--o{ Invoice : "has_invoice"
   Invoice ||--o{ Line : contains
   Product ||--o{ Line : "appears_in"
+  Line ||--o{ Shipment : "shipped_in"
+  Invoice ||--o{ Shipment : "has_shipment"

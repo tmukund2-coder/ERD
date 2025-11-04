@@ -44,12 +44,22 @@ entity Invoice {
 
 entity Line {
     line_number: INTEGER key
-    invoice_number: VARCHAR(30)
+    invoice_number: VARCHAR(30) key
     product_id: VARCHAR(20)
     line_units: INTEGER
     unit_price: DECIMAL(10,2)
     line_status: VARCHAR(50)
     ship_date: DATE
+}
+
+entity Shipment {
+    shipment_id: INTEGER key
+    invoice_number: VARCHAR(30)
+    line_number: INTEGER
+    ship_date: DATE
+    tracking_no: VARCHAR(100)
+    shipment_status: VARCHAR(50)
+    qty_shipped: INTEGER
 }
 
 relationship ManufacturerProduct {
@@ -70,4 +80,12 @@ relationship InvoiceLine {
 
 relationship ProductLine {
     Product[1 | "product"] -> Line[0..N | "line"]
+}
+
+relationship LineShipment {
+    Line[1 | "line"] -> Shipment[0..N | "shipment"]
+}
+
+relationship InvoiceShipment {
+    Invoice[1 | "invoice"] -> Shipment[0..N | "shipment"]
 }
