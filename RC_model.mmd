@@ -51,10 +51,10 @@ erDiagram
   }
 
   %% Relationships
-  Manufacturer ||--o{ Product : produces
-  Product ||--o| Inventory : has
-  Customer ||--o{ Invoice : "has_invoice"
-  Invoice ||--o{ Line : contains
-  Product ||--o{ Line : "appears_in"
-  Line ||--o{ Shipment : "shipped_in"
-  Invoice ||--o{ Shipment : "has_shipment"
+  Manufacturer ||--o{ Product : "manufacturer_id (FK)"
+  Product ||--o| Inventory : "product_id (PK/FK)"
+  Customer ||--o{ Invoice : "customer_id (FK)"
+  Invoice ||--o{ Line : "invoice_number (FK)"
+  Product ||--o{ Line : "product_id (FK)"
+  Line ||--o{ Shipment : "invoice_number, line_number (FK)"
+  Invoice ||--o{ Shipment : "invoice_number (FK)"

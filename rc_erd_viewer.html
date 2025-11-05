@@ -11,15 +11,7 @@
     footer { margin-top: 1rem; color: #666; font-size: 0.9rem }
   </style>
 </head>
-<body>
-  <div class="container">
-    <header>
-      <h1>RC ERD Viewer — RC_model</h1>
-      <p>Rendered from <code>RC_model.mmd</code> (converted from <code>RC_model.erd</code>).</p>
-    </header>
-
-    <div class="mermaid">
-erDiagram
+    <div id="diagram" class="mermaid">Loading diagram…</div>
   Manufacturer {
     INTEGER manufacturer_id PK
     VARCHAR manufacturer_name
@@ -87,6 +79,37 @@ erDiagram
   </div>
 
   <script src="https://unpkg.com/mermaid@10.4.0/dist/mermaid.min.js"></script>
-  <script>mermaid.initialize({ startOnLoad: true, theme: 'base' });</script>
+  <script>
+    // Do not auto-render — we'll fetch the .mmd file and render it dynamically
+    mermaid.initialize({ startOnLoad: false, theme: 'base' });
+
+    async function loadAndRenderMMD(path) {
+      try {
+        const res = await fetch(path);
+        if (!res.ok) throw new Error(`Failed to fetch ${path}: ${res.status}`);
+        const text = await res.text();
+        const container = document.getElementById('diagram');
+        // Use mermaid API to render into the container
+        const insertId = 'mermaid-svg-' + Date.now();
+        // mermaid.mermaidAPI.render requires a callback in some builds
+        if (mermaid.mermaidAPI && mermaid.mermaidAPI.render) {
+          mermaid.mermaidAPI.render(insertId, text, (svgCode) => { container.innerHTML = svgCode; });
+        } else if (mermaid.render) {
+          // fallback: try mermaid.render which may return a promise/string
+          const rendered = mermaid.render ? await mermaid.render(insertId, text) : null;
+          if (rendered) container.innerHTML = rendered;
+        } else {
+          container.textContent = 'Mermaid render API not available in this environment.';
+        }
+      } catch (err) {
+        const container = document.getElementById('diagram');
+        container.textContent = 'Error loading diagram: ' + err.message;
+        console.error(err);
+      }
+    }
+
+    // Load the external MMD file from the same directory
+    loadAndRenderMMD('RC_model.mmd');
+  </script>
 </body>
 </html>
