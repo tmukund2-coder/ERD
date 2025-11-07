@@ -1,60 +1,70 @@
 erDiagram
-  Manufacturer {
-    INTEGER manufacturer_id PK
-    VARCHAR manufacturer_name
-    VARCHAR manufacturer_website
-  }
 
-  Product {
-    VARCHAR product_id PK
-    VARCHAR product_name
-    VARCHAR model_type
-    DECIMAL model_price
-    VARCHAR decal
-    VARCHAR category
-    VARCHAR scale
-    INTEGER manufacturer_id
-  }
+    %% ModelShop ERD (converted from RC_model.erd)
+    Customer {
+        INTEGER customer_id PK
+        VARCHAR cust_name
+        VARCHAR cust_email
+        VARCHAR cust_phone
+        VARCHAR cust_address
+    }
 
-  Inventory {
-    VARCHAR product_id PK
-    INTEGER qoh
-    INTEGER reorder_level
-  }
+    Manufacturer {
+        INTEGER manufacturer_id PK
+        VARCHAR manufacturer_name
+        VARCHAR manufacturer_website
+    }
 
-  Customer {
-    INTEGER customer_id PK
-    VARCHAR customer_name
-    VARCHAR cust_address
-    VARCHAR cust_email
-    VARCHAR cust_phone
-  }
+    Product {
+        INTEGER product_id PK
+        INTEGER manufacturer_id
+        VARCHAR product_name
+        VARCHAR model_type
+        DECIMAL model_price
+        INTEGER min_order_qty
+        VARCHAR scale
+    }
 
-  Invoice {
-    VARCHAR invoice_number PK
-    DATE invoice_date
-    INTEGER customer_id
-    VARCHAR order_id
-    DECIMAL total_amount
-    DECIMAL shipping_charge
-    VARCHAR invoice_status
-  }
+    Inventory {
+        INTEGER product_id PK
+        INTEGER qoh
+        INTEGER reorder_level
+    }
 
-  Line {
-    INTEGER line_number PK
-    VARCHAR invoice_number PK
-    VARCHAR product_id
-    INTEGER line_units
-    DECIMAL unit_price
-    VARCHAR line_status
-    DATE ship_date
-  }
+    Invoice {
+        INTEGER invoice_number PK
+        INTEGER customer_id
+        DATE invoice_date
+        DECIMAL total_amount
+        DECIMAL shipping_charge
+        VARCHAR invoice_status
+    }
 
-  %% Relationships
-  Manufacturer ||--o{ Product : "manufacturer_id (FK)"
-  Product ||--o| Inventory : "product_id (PK/FK)"
-  Customer ||--o{ Invoice : "customer_id (FK)"
-  Invoice ||--o{ Line : "invoice_number (FK)"
-  Product ||--o{ Line : "product_id (FK)"
-  Line ||--o{ Shipment : "invoice_number, line_number (FK)"
-  Invoice ||--o{ Shipment : "invoice_number (FK)"
+    Line {
+        INTEGER invoice_number PK
+        INTEGER line_number PK
+        INTEGER product_id
+        INTEGER line_units
+        DECIMAL unit_price
+        VARCHAR line_status
+        DATE ship_date
+    }
+
+    Shipment {
+        INTEGER shipment_id PK
+        INTEGER invoice_number
+        INTEGER line_number
+        INTEGER qty_shipped
+        DATE ship_date
+        VARCHAR tracking_number
+        VARCHAR shipment_status
+    }
+
+    %% Relationships with FK labels
+    Customer ||--o{ Invoice : "customer_id (FK)"
+    Manufacturer ||--o{ Product : "manufacturer_id (FK)"
+    Product ||--|| Inventory : "product_id (PK/FK)"
+    Invoice ||--o{ Line : "invoice_number (FK)"
+    Product ||--o{ Line : "product_id (FK)"
+    Invoice ||--o{ Shipment : "invoice_number (FK)"
+    Line ||--o{ Shipment : "invoice_number,line_number (FKs)"

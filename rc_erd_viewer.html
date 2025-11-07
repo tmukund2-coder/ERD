@@ -5,73 +5,20 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>RC ERD Viewer — RC_model</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; margin: 1rem; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; margin: 1rem; background:#121212; color:#eee }
     .container { max-width: 1200px; margin: 0 auto; }
-    .mermaid { background: #fff; padding: 1rem; border-radius: 6px; box-shadow: 0 1px 6px rgba(0,0,0,0.08); }
-    footer { margin-top: 1rem; color: #666; font-size: 0.9rem }
+    .mermaid { background: #0b0b0b; padding: 1rem; border-radius: 6px; box-shadow: 0 1px 6px rgba(0,0,0,0.08); }
+    footer { margin-top: 1rem; color: #888; font-size: 0.9rem }
   </style>
 </head>
+<body>
+  <div class="container">
+    <header>
+      <h1>RC ERD Viewer — RC_model</h1>
+      <p>Diagram source: <code>RC_model.mmd</code></p>
+    </header>
+
     <div id="diagram" class="mermaid">Loading diagram…</div>
-  Manufacturer {
-    INTEGER manufacturer_id PK
-    VARCHAR manufacturer_name
-    VARCHAR manufacturer_website
-  }
-
-  Product {
-    VARCHAR product_id PK
-    VARCHAR product_name
-    VARCHAR model_type
-    DECIMAL model_price
-    VARCHAR decal
-    VARCHAR category
-    VARCHAR scale
-    INTEGER manufacturer_id
-  }
-
-  Inventory {
-    VARCHAR product_id PK
-    INTEGER qoh
-    INTEGER reorder_level
-  }
-
-  Customer {
-    INTEGER customer_id PK
-    VARCHAR customer_name
-    VARCHAR cust_address
-    VARCHAR cust_email
-    VARCHAR cust_phone
-  }
-
-  Invoice {
-    VARCHAR invoice_number PK
-    DATE invoice_date
-    INTEGER customer_id
-    VARCHAR order_id
-    DECIMAL total_amount
-    DECIMAL shipping_charge
-    VARCHAR invoice_status
-  }
-
-  Line {
-    INTEGER line_number PK
-    VARCHAR invoice_number PK
-    VARCHAR product_id
-    INTEGER line_units
-    DECIMAL unit_price
-    VARCHAR line_status
-    DATE ship_date
-  }
-
-  %% Relationships
-  Manufacturer ||--o{ Product : produces
-  Product ||--o| Inventory : has
-  Customer ||--o{ Invoice : "has_invoice"
-  Invoice ||--o{ Line : contains
-  Product ||--o{ Line : "appears_in"
-  Line ||--o{ Shipment : "shipped_in"
-  Invoice ||--o{ Shipment : "has_shipment"
-    </div>
 
     <footer>
       <p>Uses Mermaid CDN to render. For an offline image, use <code>@mermaid-js/mermaid-cli</code> and render <code>RC_model.mmd</code>.</p>
@@ -80,27 +27,19 @@
 
   <script src="https://unpkg.com/mermaid@10.4.0/dist/mermaid.min.js"></script>
   <script>
-    // Do not auto-render — we'll fetch the .mmd file and render it dynamically
-    mermaid.initialize({ startOnLoad: false, theme: 'base' });
+    // initialize mermaid but don't auto-render so we can inject external source
+    mermaid.initialize({ startOnLoad: false, theme: 'dark' });
 
     async function loadAndRenderMMD(path) {
       try {
         const res = await fetch(path);
-        if (!res.ok) throw new Error(`Failed to fetch ${path}: ${res.status}`);
+        if (!res.ok) throw new Error('Failed to fetch ' + path + ': ' + res.status);
         const text = await res.text();
         const container = document.getElementById('diagram');
-        // Use mermaid API to render into the container
-        const insertId = 'mermaid-svg-' + Date.now();
-        // mermaid.mermaidAPI.render requires a callback in some builds
-        if (mermaid.mermaidAPI && mermaid.mermaidAPI.render) {
-          mermaid.mermaidAPI.render(insertId, text, (svgCode) => { container.innerHTML = svgCode; });
-        } else if (mermaid.render) {
-          // fallback: try mermaid.render which may return a promise/string
-          const rendered = mermaid.render ? await mermaid.render(insertId, text) : null;
-          if (rendered) container.innerHTML = rendered;
-        } else {
-          container.textContent = 'Mermaid render API not available in this environment.';
-        }
+        // place the mermaid source inside container and let mermaid parse it
+        container.textContent = text;
+        // render
+        await mermaid.init(undefined, container);
       } catch (err) {
         const container = document.getElementById('diagram');
         container.textContent = 'Error loading diagram: ' + err.message;
@@ -108,8 +47,8 @@
       }
     }
 
-    // Load the external MMD file from the same directory
     loadAndRenderMMD('RC_model.mmd');
   </script>
 </body>
 </html>
+  }
