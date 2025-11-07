@@ -1,91 +1,99 @@
-erdiagram RCModel
+erdiagram ModelShop
 notation=crowsfoot
 
+// Model shop ERD using crowsfoot notation
+// Assumptions documented from source:
+// - Invoice acts as order header (no separate order table needed)
+// - Shipment table handles partial deliveries
+// - Inventory tracks current stock and triggers reorders
+// - Decals and models share Product table, distinguished by model_type
+// - Line table snapshots prices at time of order
+// - Credit card processing is handled externally
+
+entity Customer {
+    customer_id: INTEGER key  // Must be unique, not null
+    cust_name: VARCHAR(100)
+    cust_email: VARCHAR(100)
+    cust_phone: VARCHAR(10)   // Must be exactly 10 digits
+    cust_address: VARCHAR(200)
+}
+
 entity Manufacturer {
-    manufacturer_id: INTEGER key
-    manufacturer_name: VARCHAR(150)
-    manufacturer_website: VARCHAR(255)
+    manufacturer_id: INTEGER key  // Must be unique, not null
+    manufacturer_name: VARCHAR(100)
+    manufacturer_website: VARCHAR(200)
 }
 
 entity Product {
-    product_id: VARCHAR(20) key
-    product_name: VARCHAR(200)
-    model_type: VARCHAR(100)
-    model_price: DECIMAL(10,2)
-    decal: VARCHAR(100)
-    category: VARCHAR(100)
-    scale: VARCHAR(50)
-    manufacturer_id: INTEGER
+    product_id: INTEGER key          // Must be unique, not null
+    manufacturer_id: INTEGER         // FK to Manufacturer
+    product_name: VARCHAR(100)
+    model_type: VARCHAR(20)          // One of: Car, Aircraft, Ship, Decal
+    model_price: DECIMAL(10,2)       // Must be >= 0
+    min_order_qty: INTEGER           // Must be positive
+    scale: VARCHAR(10)               // Standard values: 1/144, 1/100, 1/72, 1/48, 1/35, 1/32, 1/24
 }
 
 entity Inventory {
-    product_id: VARCHAR(20) key
-    qoh: INTEGER
-    reorder_level: INTEGER
-}
-
-entity Customer {
-    customer_id: INTEGER key
-    customer_name: VARCHAR(200)
-    cust_address: VARCHAR(300)
-    cust_email: VARCHAR(150)
-    cust_phone: VARCHAR(30)
+    product_id: INTEGER key          // PK/FK to Product
+    qoh: INTEGER                     // Quantity on hand
+    reorder_level: INTEGER           // Triggers reorder when qoh <= reorder_level
 }
 
 entity Invoice {
-    invoice_number: VARCHAR(30) key
+    invoice_number: INTEGER key      // Must be unique, not null
+    customer_id: INTEGER             // FK to Customer
     invoice_date: DATE
-    customer_id: INTEGER
-    order_id: VARCHAR(50)
-    total_amount: DECIMAL(12,2)
+    total_amount: DECIMAL(10,2)      // Must be >= 0
     shipping_charge: DECIMAL(10,2)
-    invoice_status: VARCHAR(50)
+    invoice_status: VARCHAR(20)      // One of: Open, Partially Shipped, Closed
 }
 
 entity Line {
-    line_number: INTEGER key
-    invoice_number: VARCHAR(30) key
-    product_id: VARCHAR(20)
-    line_units: INTEGER
-    unit_price: DECIMAL(10,2)
-    line_status: VARCHAR(50)
-    ship_date: DATE
+    invoice_number: INTEGER          // FK to Invoice
+    line_number: INTEGER key         // Must be unique within invoice
+    product_id: INTEGER             // FK to Product
+    line_units: INTEGER             // Must be positive
+    unit_price: DECIMAL(10,2)       // Must be >= 0, snapshotted at order time
+    line_status: VARCHAR(20)        // One of: Backordered, Partial, Fulfilled
+    ship_date: DATE                 // Must be >= invoice_date
 }
 
 entity Shipment {
-    shipment_id: INTEGER key
-    invoice_number: VARCHAR(30)
-    line_number: INTEGER
-    ship_date: DATE
-    tracking_no: VARCHAR(100)
-    shipment_status: VARCHAR(50)
-    qty_shipped: INTEGER
+    shipment_id: INTEGER key        // Must be unique, not null
+    invoice_number: INTEGER         // FK to Invoice
+    line_number: INTEGER           // FK to Line
+    qty_shipped: INTEGER           // Must be positive, cannot exceed line_units
+    ship_date: DATE               // Must be >= invoice_date
+    tracking_number: VARCHAR(50)
+    shipment_status: VARCHAR(20)   // One of: Created, Shipped, Delivered
 }
 
-relationship ManufacturerProduct {
-    Manufacturer[1 | "manufacturer"] -> Product[0..N | "product"]
+// Relationships based on business rules
+relationship GeneratesInvoices {
+    Customer[1] -> Invoice[0..N | "invoices"]  // Customer may have many invoices
 }
 
-relationship ProductInventory {
-    Product[1 | "product"] -> Inventory[0..1 | "inventory"]
+relationship HasLines {
+    Invoice[1] -> Line[1..N | "lines"]  // Invoice must have at least one line
 }
 
-relationship CustomerInvoice {
-    Customer[1 | "customer"] -> Invoice[0..N | "invoice"]
+relationship ProducesProducts {
+    Manufacturer[1] -> Product[0..N | "products"]  // Manufacturer can have many products
 }
 
-relationship InvoiceLine {
-    Invoice[1 | "invoice"] -> Line[0..N | "line"]
+relationship TracksInventory {
+    Product[1] -> Inventory[1 | "stock"]  // One-to-one: Product must have one inventory record
 }
 
-relationship ProductLine {
-    Product[1 | "product"] -> Line[0..N | "line"]
+relationship OrdersProduct {
+    Product[1] -> Line[0..N | "orders"]  // Product can appear on many lines
 }
 
-relationship LineShipment {
-    Line[1 | "line"] -> Shipment[0..N | "shipment"]
+relationship HasShipments {
+    Invoice[1] -> Shipment[0..N | "shipments"]  // Invoice can have multiple shipments
 }
 
-relationship InvoiceShipment {
-    Invoice[1 | "invoice"] -> Shipment[0..N | "shipment"]
+relationship ShipsLineItems {
+    Line[1] -> Shipment[0..N | "partial_shipments"]  // Line can have multiple shipments for partial delivery
 }
